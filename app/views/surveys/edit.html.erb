@@ -1,0 +1,97 @@
+<!-- app/views/surveys/edit.html.erb -->
+<h1>Edit Survey</h1>
+<div id="toolbox">
+  <div id="label-tool" draggable="true">Label</div>
+  <div id="input-tool" draggable="true">Input Text</div>
+</div>
+<div id="survey-container"></div>
+
+<style>
+  /* Add your styles here */
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toolbox = document.getElementById('toolbox');
+    const surveyContainer = document.getElementById('survey-container');
+    toolbox.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', e.target.id);
+    });
+
+    surveyContainer.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+
+    surveyContainer.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const componentType = e.dataTransfer.getData('text/plain');
+      const component = document.createElement('div');
+      component.classList.add('component');
+      component.draggable = true;
+
+      if (componentType === 'label-tool') {
+        component.innerHTML = 'Double-click to edit label';
+        component.classList.add('label');
+      } else if (componentType === 'input-tool') {
+        component.innerHTML = '<input type="text" value="">';
+        component.classList.add('input');
+      }
+
+      component.style.position = 'absolute';
+      component.style.left = '10px';
+      component.style.top = '10px';
+
+      surveyContainer.appendChild(component);
+
+      component.addEventListener('dblclick', () => {
+        if (component.classList.contains('label')) {
+          const newText = prompt('Edit label text:', component.textContent);
+          if (newText !== null) {
+            component.textContent = newText;
+            saveComponent(component);
+          }
+        }
+      });
+
+      if (component.classList.contains('input')) {
+        component.querySelector('input').addEventListener('blur', () => {
+          saveComponent(component);
+        });
+      }
+    });
+function saveComponent(component) {
+  
+  const componentType = component.classList.contains('label') ? 'label' : 'input';
+  const content = component.classList.contains('label') ? component.textContent : component.querySelector('input').value;
+  const positionX = component.style.left;
+  const positionY = component.style.top;
+
+  fetch('/surveys/save_component', {
+
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    },
+
+    body: JSON.stringify({
+      component: {
+        component_type: componentType,
+        content: content,
+        position_x: positionX,
+        position_y: positionY,
+        survey_id: <%= @survey.id.to_json %> // Include the survey ID here
+      }
+    })
+  }).then(response => response.json())
+    .then(data => {
+      
+      console.log('Component saved:', data);
+    })
+    .catch(error => {
+      console.error('Error saving component:', error);
+    });
+}
+
+  });
+</script>

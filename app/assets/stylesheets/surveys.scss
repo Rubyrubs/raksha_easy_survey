@@ -1,0 +1,28 @@
+/* app/assets/stylesheets/survey_edit.css */
+
+#toolbox {
+  display: flex;
+  flex-direction: column;
+}
+
+#toolbox div {
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+#survey-container {
+  border: 1px solid #000;
+  position: relative;
+  width: 100%;
+  height: 500px;
+}
+
+.component {
+  position: absolute;
+  border: 1px solid #aaa;
+  background-color: #f9f9f9;
+  padding: 10px;
+  cursor: move;
+}
